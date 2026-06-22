@@ -1,0 +1,673 @@
+mod made by aveh
+text
+
+```lua
+--[[
+    Vince Bypass GUI - Mobile & PC Support
+    Draggable, Minimizable, Animated, Blue Theme with Side Tabs
+    Tabs: Main, Scripts, Info
+    Button: Cobalt (Scripts tab) - Loads Cobalt script
+    Button: PlaceHook (Main tab) - Draggable place hook functionality
+]]
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- Create GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VinceBypass"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 600, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+
+-- UI Corner for MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
+
+-- Drop shadow
+local DropShadow = Instance.new("Frame")
+DropShadow.Name = "DropShadow"
+DropShadow.Parent = MainFrame
+DropShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+DropShadow.BackgroundTransparency = 0.7
+DropShadow.Size = UDim2.new(1, 10, 1, 10)
+DropShadow.Position = UDim2.new(0, -5, 0, -5)
+DropShadow.ZIndex = -1
+local ShadowCorner = Instance.new("UICorner")
+ShadowCorner.CornerRadius = UDim.new(0, 8)
+ShadowCorner.Parent = DropShadow
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainFrame
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+TitleBar.BorderSizePixel = 0
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = TitleBar
+
+-- Title Text
+local TitleText = Instance.new("TextLabel")
+TitleText.Name = "TitleText"
+TitleText.Parent = TitleBar
+TitleText.Size = UDim2.new(0, 200, 1, 0)
+TitleText.Position = UDim2.new(0, 15, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "Vince Bypass | 100x"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextSize = 18
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Animations for title (100x effect)
+local titleAnimRunning = true
+coroutine.wrap(function()
+    local hue = 0
+    while titleAnimRunning and TitleText do
+        hue = (hue + 0.01) % 1
+        local color = Color3.fromHSV(hue, 0.8, 1)
+        TitleText.TextColor3 = color
+        RunService.RenderStepped:Wait()
+    end
+end)()
+
+-- Minimize Button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = TitleBar
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -80, 0, 5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+MinimizeButton.Text = "—"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 20
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.BorderSizePixel = 0
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 6)
+MinimizeCorner.Parent = MinimizeButton
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = TitleBar
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -45, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.BorderSizePixel = 0
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
+
+-- Toggle Button (external, draggable independently)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(0.5, -25, 0.5, -200)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 100, 255)
+ToggleButton.Text = "V"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 24
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Visible = false -- Hidden until minimized/closed
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 25)
+ToggleCorner.Parent = ToggleButton
+
+-- Toggle Button Stroke
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Parent = ToggleButton
+ToggleStroke.Thickness = 2
+ToggleStroke.Color = Color3.fromRGB(50, 150, 255)
+
+-- Side Tabs Container
+local TabContainer = Instance.new("Frame")
+TabContainer.Name = "TabContainer"
+TabContainer.Parent = MainFrame
+TabContainer.Size = UDim2.new(0, 120, 1, -40)
+TabContainer.Position = UDim2.new(0, 0, 0, 40)
+TabContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+TabContainer.BorderSizePixel = 0
+
+-- Tab Buttons
+local Tabs = {"Main", "Scripts", "Info"}
+local TabButtons = {}
+local selectedTab = "Main"
+
+for i, tabName in ipairs(Tabs) do
+    local TabButton = Instance.new("TextButton")
+    TabButton.Name = tabName .. "Tab"
+    TabButton.Parent = TabContainer
+    TabButton.Size = UDim2.new(1, -10, 0, 35)
+    TabButton.Position = UDim2.new(0, 5, 0, 10 + (i - 1) * 45)
+    TabButton.BackgroundColor3 = Color3.fromRGB(30, 100, 255)
+    TabButton.Text = tabName
+    TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TabButton.TextSize = 16
+    TabButton.Font = Enum.Font.GothamBold
+    TabButton.BorderSizePixel = 0
+    TabButton.AutoButtonColor = false
+
+    local TabCorner = Instance.new("UICorner")
+    TabCorner.CornerRadius = UDim.new(0, 6)
+    TabCorner.Parent = TabButton
+
+    TabButtons[tabName] = TabButton
+end
+
+-- Content Area (right side of tabs)
+local ContentArea = Instance.new("ScrollingFrame")
+ContentArea.Name = "ContentArea"
+ContentArea.Parent = MainFrame
+ContentArea.Size = UDim2.new(1, -130, 1, -50)
+ContentArea.Position = UDim2.new(0, 125, 0, 45)
+ContentArea.BackgroundTransparency = 1
+ContentArea.BorderSizePixel = 0
+ContentArea.ScrollBarThickness = 5
+ContentArea.ScrollBarImageColor3 = Color3.fromRGB(30, 100, 255)
+
+local ContentList = Instance.new("UIListLayout")
+ContentList.Parent = ContentArea
+ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+ContentList.Padding = UDim.new(0, 8)
+
+-- Content Pages (one per tab)
+local ContentPages = {}
+for _, tabName in ipairs(Tabs) do
+    local Page = Instance.new("Frame")
+    Page.Name = tabName .. "Page"
+    Page.Parent = ContentArea
+    Page.Size = UDim2.new(1, -10, 0, 0)
+    Page.BackgroundTransparency = 1
+    Page.BorderSizePixel = 0
+    Page.Visible = (tabName == selectedTab)
+
+    local PageLayout = Instance.new("UIListLayout")
+    PageLayout.Parent = Page
+    PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    PageLayout.Padding = UDim.new(0, 8)
+    PageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    ContentPages[tabName] = Page
+end
+
+-- Function to switch tabs
+local function SwitchTab(tabName)
+    selectedTab = tabName
+    for name, page in pairs(ContentPages) do
+        page.Visible = (name == tabName)
+    end
+    for name, button in pairs(TabButtons) do
+        if name == tabName then
+            button.BackgroundColor3 = Color3.fromRGB(50, 130, 255)
+        else
+            button.BackgroundColor3 = Color3.fromRGB(30, 100, 255)
+        end
+    end
+end
+
+-- Connect tab buttons
+for tabName, button in pairs(TabButtons) do
+    button.MouseButton1Click:Connect(function()
+        SwitchTab(tabName)
+    end)
+end
+
+-- =====================================================
+-- MAIN TAB CONTENT
+-- =====================================================
+
+-- PlaceHook Button
+local PlaceHookButton = Instance.new("TextButton")
+PlaceHookButton.Name = "PlaceHookButton"
+PlaceHookButton.Parent = ContentPages["Main"]
+PlaceHookButton.Size = UDim2.new(0.8, 0, 0, 40)
+PlaceHookButton.Position = UDim2.new(0.1, 0, 0, 10)
+PlaceHookButton.BackgroundColor3 = Color3.fromRGB(30, 100, 255)
+PlaceHookButton.Text = "PlaceHook"
+PlaceHookButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlaceHookButton.TextSize = 18
+PlaceHookButton.Font = Enum.Font.GothamBold
+PlaceHookButton.BorderSizePixel = 0
+PlaceHookButton.AutoButtonColor = false
+
+local PHCorner = Instance.new("UICorner")
+PHCorner.CornerRadius = UDim.new(0, 6)
+PHCorner.Parent = PlaceHookButton
+
+local PHStroke = Instance.new("UIStroke")
+PHStroke.Parent = PlaceHookButton
+PHStroke.Thickness = 2
+PHStroke.Color = Color3.fromRGB(80, 150, 255)
+
+-- =====================================================
+-- SCRIPTS TAB CONTENT
+-- =====================================================
+
+-- Cobalt Button
+local CobaltButton = Instance.new("TextButton")
+CobaltButton.Name = "CobaltButton"
+CobaltButton.Parent = ContentPages["Scripts"]
+CobaltButton.Size = UDim2.new(0.8, 0, 0, 40)
+CobaltButton.Position = UDim2.new(0.1, 0, 0, 10)
+CobaltButton.BackgroundColor3 = Color3.fromRGB(30, 100, 255)
+CobaltButton.Text = "Cobalt"
+CobaltButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CobaltButton.TextSize = 18
+CobaltButton.Font = Enum.Font.GothamBold
+CobaltButton.BorderSizePixel = 0
+CobaltButton.AutoButtonColor = false
+
+local CobaltCorner = Instance.new("UICorner")
+CobaltCorner.CornerRadius = UDim.new(0, 6)
+CobaltCorner.Parent = CobaltButton
+
+local CobaltStroke = Instance.new("UIStroke")
+CobaltStroke.Parent = CobaltButton
+CobaltStroke.Thickness = 2
+CobaltStroke.Color = Color3.fromRGB(80, 150, 255)
+
+-- Cobalt Button Click
+CobaltButton.MouseButton1Click:Connect(function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://github.com/notpoiu/cobalt/releases/latest/download/Cobalt.luau"))()
+    end)
+    if not success then
+        warn("Cobalt load failed: " .. tostring(err))
+    end
+end)
+
+-- =====================================================
+-- INFO TAB CONTENT
+-- =====================================================
+
+local InfoLabel = Instance.new("TextLabel")
+InfoLabel.Name = "InfoLabel"
+InfoLabel.Parent = ContentPages["Info"]
+InfoLabel.Size = UDim2.new(0.9, 0, 0, 200)
+InfoLabel.Position = UDim2.new(0.05, 0, 0, 10)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = "Vince Bypass v1.0\n100x Enhanced\n\nMade for survival.\nBlue-themed modern GUI.\nDrag anywhere. Minimize anytime.\nMobile & PC supported."
+InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+InfoLabel.TextSize = 14
+InfoLabel.Font = Enum.Font.Gotham
+InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
+InfoLabel.TextWrapped = true
+
+-- =====================================================
+-- PLACEHOOK SYSTEM (Draggable)
+-- =====================================================
+
+local PlaceHookActive = false
+local PlaceHookFrame = nil
+local HookInstances = {}
+
+local function CreatePlaceHookGUI()
+    if PlaceHookFrame then
+        PlaceHookFrame:Destroy()
+        PlaceHookFrame = nil
+    end
+
+    PlaceHookFrame = Instance.new("Frame")
+    PlaceHookFrame.Name = "PlaceHookFrame"
+    PlaceHookFrame.Parent = ScreenGui
+    PlaceHookFrame.Size = UDim2.new(0, 300, 0, 250)
+    PlaceHookFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
+    PlaceHookFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    PlaceHookFrame.BorderSizePixel = 0
+    PlaceHookFrame.ClipsDescendants = true
+
+    local PHFCorner = Instance.new("UICorner")
+    PHFCorner.CornerRadius = UDim.new(0, 8)
+    PHFCorner.Parent = PlaceHookFrame
+
+    -- PlaceHook Title Bar
+    local PHTitleBar = Instance.new("Frame")
+    PHTitleBar.Name = "PHTitleBar"
+    PHTitleBar.Parent = PlaceHookFrame
+    PHTitleBar.Size = UDim2.new(1, 0, 0, 30)
+    PHTitleBar.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    PHTitleBar.BorderSizePixel = 0
+
+    local PHTCorner = Instance.new("UICorner")
+    PHTCorner.CornerRadius = UDim.new(0, 8)
+    PHTCorner.Parent = PHTitleBar
+
+    local PHTitleText = Instance.new("TextLabel")
+    PHTitleText.Name = "PHTitleText"
+    PHTitleText.Parent = PHTitleBar
+    PHTitleText.Size = UDim2.new(1, -40, 1, 0)
+    PHTitleText.Position = UDim2.new(0, 10, 0, 0)
+    PHTitleText.BackgroundTransparency = 1
+    PHTitleText.Text = "PlaceHook"
+    PHTitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PHTitleText.TextSize = 16
+    PHTitleText.Font = Enum.Font.GothamBold
+    PHTitleText.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Close PlaceHook button
+    local PHClose = Instance.new("TextButton")
+    PHClose.Name = "PHClose"
+    PHClose.Parent = PHTitleBar
+    PHClose.Size = UDim2.new(0, 25, 0, 25)
+    PHClose.Position = UDim2.new(1, -30, 0, 2)
+    PHClose.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+    PHClose.Text = "✕"
+    PHClose.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PHClose.TextSize = 14
+    PHClose.Font = Enum.Font.GothamBold
+    PHClose.BorderSizePixel = 0
+
+    local PHCloseCorner = Instance.new("UICorner")
+    PHCloseCorner.CornerRadius = UDim.new(0, 4)
+    PHCloseCorner.Parent = PHClose
+
+    PHClose.MouseButton1Click:Connect(function()
+        PlaceHookActive = false
+        if PlaceHookFrame then
+            PlaceHookFrame:Destroy()
+            PlaceHookFrame = nil
+        end
+        -- Clean up hook instances
+        for _, v in pairs(HookInstances) do
+            if v and v.Parent then
+                v:Destroy()
+            end
+        end
+        HookInstances = {}
+    end)
+
+    -- Hook info display
+    local HookInfo = Instance.new("TextLabel")
+    HookInfo.Name = "HookInfo"
+    HookInfo.Parent = PlaceHookFrame
+    HookInfo.Size = UDim2.new(1, -20, 1, -40)
+    HookInfo.Position = UDim2.new(0, 10, 0, 35)
+    HookInfo.BackgroundTransparency = 1
+    HookInfo.Text = "PlaceHook Active\n\nDrag the hook visual to any position.\nUse to attach objects in workspace."
+    HookInfo.TextColor3 = Color3.fromRGB(200, 200, 255)
+    HookInfo.TextSize = 14
+    HookInfo.Font = Enum.Font.Gotham
+    HookInfo.TextWrapped = true
+    HookInfo.TextYAlignment = Enum.TextYAlignment.Top
+
+    -- Make PlaceHook draggable
+    local PHGui = PlaceHookFrame
+    local PHDragging = false
+    local PHDragInput, PHDragStart, PHStartPos
+
+    local function updatePH(input)
+        local delta = input.Position - PHDragStart
+        PHGui.Position = UDim2.new(PHStartPos.X.Scale, PHStartPos.X.Offset + delta.X, PHStartPos.Y.Scale, PHStartPos.Y.Offset + delta.Y)
+    end
+
+    PHTitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            PHDragging = true
+            PHDragStart = input.Position
+            PHStartPos = PHGui.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    PHDragging = false
+                end
+            end)
+        end
+    end)
+
+    PHTitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            PHDragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == PHDragInput and PHDragging then
+            updatePH(input)
+        end
+    end)
+end
+
+-- PlaceHook Button Click
+PlaceHookButton.MouseButton1Click:Connect(function()
+    PlaceHookActive = not PlaceHookActive
+    if PlaceHookActive then
+        CreatePlaceHookGUI()
+        -- Create hook visual in workspace
+        local hookPart = Instance.new("Part")
+        hookPart.Name = "PlaceHookVisual"
+        hookPart.Parent = workspace
+        hookPart.Size = Vector3.new(1, 1, 1)
+        hookPart.Position = Vector3.new(0, 10, 0)
+        hookPart.Anchored = true
+        hookPart.CanCollide = false
+        hookPart.BrickColor = BrickColor.new("Bright blue")
+        hookPart.Transparency = 0.5
+        hookPart.Material = Enum.Material.Neon
+
+        local hookHighlight = Instance.new("Highlight")
+        hookHighlight.Parent = hookPart
+        hookHighlight.FillColor = Color3.fromRGB(30, 100, 255)
+        hookHighlight.OutlineColor = Color3.fromRGB(100, 150, 255)
+        hookHighlight.FillTransparency = 0.5
+
+        table.insert(HookInstances, hookPart)
+        table.insert(HookInstances, hookHighlight)
+    else
+        if PlaceHookFrame then
+            PlaceHookFrame:Destroy()
+            PlaceHookFrame = nil
+        end
+        for _, v in pairs(HookInstances) do
+            if v and v.Parent then
+                v:Destroy()
+            end
+        end
+        HookInstances = {}
+    end
+end)
+
+-- =====================================================
+-- DRAGGING SYSTEM (Main GUI)
+-- =====================================================
+
+local gui = MainFrame
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    -- Clamp to screen bounds
+    local screenSize = workspace.CurrentCamera.ViewportSize
+    local guiSize = gui.AbsoluteSize
+    local minX = 0
+    local maxX = screenSize.X - guiSize.X
+    local minY = 0
+    local maxY = screenSize.Y - guiSize.Y
+    newPos = UDim2.new(0, math.clamp(newPos.X.Offset, minX, maxX), 0, math.clamp(newPos.Y.Offset, minY, maxY))
+    gui.Position = newPos
+end
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = gui.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- =====================================================
+-- TOGGLE BUTTON DRAGGING
+-- =====================================================
+
+local toggleDragging = false
+local toggleDragInput, toggleDragStart, toggleStartPos
+
+local function updateToggle(input)
+    local delta = input.Position - toggleDragStart
+    ToggleButton.Position = UDim2.new(toggleStartPos.X.Scale, toggleStartPos.X.Offset + delta.X, toggleStartPos.Y.Scale, toggleStartPos.Y.Offset + delta.Y)
+end
+
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        toggleDragging = true
+        toggleDragStart = input.Position
+        toggleStartPos = ToggleButton.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                toggleDragging = false
+            end
+        end)
+    end
+end)
+
+ToggleButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        toggleDragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == toggleDragInput and toggleDragging then
+        updateToggle(input)
+    end
+end)
+
+-- =====================================================
+-- MINIMIZE / TOGGLE FUNCTIONALITY
+-- =====================================================
+
+local minimized = false
+
+local function MinimizeGUI()
+    minimized = true
+    MainFrame.Visible = false
+    ToggleButton.Visible = true
+end
+
+local function RestoreGUI()
+    minimized = false
+    MainFrame.Visible = true
+    ToggleButton.Visible = false
+end
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    MinimizeGUI()
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    MinimizeGUI()
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    if minimized then
+        RestoreGUI()
+    else
+        MinimizeGUI()
+    end
+end)
+
+-- Toggle animation for the toggle button
+local function AnimateToggleButton()
+    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, -1, true)
+    local goal = {Size = UDim2.new(0, 55, 0, 55)}
+    local tween = TweenService:Create(ToggleButton, tweenInfo, goal)
+    tween:Play()
+end
+AnimateToggleButton()
+
+-- =====================================================
+-- MOBILE TOUCH SUPPORT OPTIMIZATION
+-- =====================================================
+
+-- Adjust button sizes for mobile
+local function AdjustForMobile()
+    local viewportSize = workspace.CurrentCamera.ViewportSize
+    local isMobile = viewportSize.X < 768
+
+    if isMobile then
+        MainFrame.Size = UDim2.new(0.9, 0, 0.8, 0)
+        MainFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
+        TabContainer.Size = UDim2.new(0, 100, 1, -40)
+        ContentArea.Size = UDim2.new(1, -110, 1, -50)
+        ContentArea.Position = UDim2.new(0, 105, 0, 45)
+        for _, btn in pairs(TabButtons) do
+            btn.Size = UDim2.new(1, -10, 0, 40)
+        end
+        PlaceHookButton.Size = UDim2.new(0.9, 0, 0, 50)
+        CobaltButton.Size = UDim2.new(0.9, 0, 0, 50)
+    end
+end
+AdjustForMobile()
+
+-- =====================================================
+-- HOVER ANIMATIONS FOR BUTTONS
+-- =====================================================
+
+local function AddHoverAnimation(button)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 140, 255)}):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        local defaultColor = Color3.fromRGB(30, 100, 255)
+        if button == PlaceHookButton or button == CobaltButton then
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = defaultColor}):Play()
+        end
+    end)
+end
+
+AddHoverAnimation(PlaceHookButton)
+AddHoverAnimation(CobaltButton)
+for _, btn in pairs(TabButtons) do
+    AddHoverAnimation(btn)
+end
+
+-- Initialize
+SwitchTab("Main")
+print("Vince Bypass GUI Loaded - 100x Enhanced")
