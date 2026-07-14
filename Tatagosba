@@ -813,4 +813,268 @@ addButton("Crash Server (Lag Bomb)", function()
     print("Crash payload sent")
 end, crashTab, 10)
 
+-- ==============================
+-- TEAM CHECK SYSTEM
+-- ==============================
+local function getPlayerTeam(plr)
+    if plr.Team then
+        return plr.Team.Name
+    elseif plr:FindFirstChild("Team") then
+        return plr.Team.Value
+    elseif plr:FindFirstChild("TeamColor") then
+        return tostring(plr.TeamColor)
+    else
+        return nil
+    end
+end
+
+local function isSameTeam(plr1, plr2)
+    if plr1 == plr2 then return true end
+    local team1 = getPlayerTeam(plr1)
+    local team2 = getPlayerTeam(plr2)
+    if team1 and team2 then
+        return team1 == team2
+    end
+    return false
+end
+
+local function getTeamColor(plr)
+    if plr.Team and plr.Team.TeamColor then
+        return plr.Team.TeamColor.Color
+    elseif plr:FindFirstChild("TeamColor") then
+        return plr.TeamColor.Color
+    end
+    return Color3.fromRGB(255,255,255)
+end
+
+-- MODIFIED TUROK AIMBOT WITH TEAM CHECK
+local turokTab = tabRefs["Turok"].content
+local aimbotEnabled = false
+local aimbotTeamCheck = false
+
+addToggle("Aimbot (Head Lock)", function(state)
+    aimbotEnabled = state
+    showNotification("TUROK AIMBOT", state and "ON - Locking heads." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 0))
+end, turokTab, 10)
+
+addToggle("Aimbot - Team Check (Ignore Teammates)", function(state)
+    aimbotTeamCheck = state
+    showNotification("TUROK TEAM CHECK", state and "ON - Ignoring teammates." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, turokTab, 50)
+
+-- MODIFIED AIMBOT LOOP
+RunService.RenderStepped:Connect(function()
+    if not aimbotEnabled or not hrp then return end
+    local closest, dist = nil, math.huge
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("Head") then
+            -- TEAM CHECK
+            if aimbotTeamCheck and isSameTeam(lp, plr) then
+                continue
+            end
+            local head = plr.Character.Head
+            local screenPos, onScreen = Workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+            if onScreen then
+                local d = (head.Position - hrp.Position).Magnitude
+                if d < dist then
+                    dist = d
+                    closest = head
+                end
+            end
+        end
+    end
+    if closest then
+        Workspace.CurrentCamera.CFrame = CFrame.new(Workspace.CurrentCamera.CFrame.Position, closest.Position)
+        mouse.Target = closest
+    end
+end)
+
+-- MODIFIED ESP WITH TEAM COLORS
+local espTab = tabRefs["ESP"].content
+local espEnabled = false
+local espTeamCheck = false
+
+addToggle("ESP (Box + Name)", function(state)
+    espEnabled = state
+    if state then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= lp and plr.Character then
+                local bill = Instance.new("BillboardGui")
+                bill.Name = "ESP_" .. plr.Name
+                bill.Size = UDim2.new(0, 4, 0, 4)
+                bill.AlwaysOnTop = true
+                bill.Parent = plr.Character:FindFirstChild("Head") or plr.Character
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,0,1,0)
+                local teamName = getPlayerTeam(plr) or "No Team"
+                local teamColor = getTeamColor(plr)
+                label.Text = plr.Name .. " [" .. teamName .. "] | HP: " .. (plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health or "?")
+                label.TextColor3 = isSameTeam(lp, plr) and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+                label.BackgroundTransparency = 1
+                label.Parent = bill
+            end
+        end
+    else
+        for _, v in pairs(Workspace:GetDescendants()) do
+            if v:IsA("BillboardGui") and v.Name:match("ESP") then v:Destroy() end
+        end
+    end
+    showNotification("ESP", state and "ON - Showing players." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 0))
+end, espTab, 10)
+
+addToggle("ESP - Team Check (Color Teammates Green)", function(state)
+    espTeamCheck = state
+    if espEnabled then
+        -- Refresh ESP
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= lp and plr.Character then
+                local bill = plr.Character:FindFirstChild("ESP_" .. plr.Name)
+                if bill then
+                    local label = bill:FindFirstChildOfClass("TextLabel")
+                    if label then
+                        label.TextColor3 = state and (isSameTeam(lp, plr) and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)) or Color3.fromRGB(255, 0, 0)
+                    end
+                end
+            end
+        end
+    end
+    showNotification("ESP TEAM CHECK", state and "ON - Teammates green." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, espTab, 60)
+
+-- MODIFIED BIG HEAD WITH TEAM CHECK
+local bhTab = tabRefs["Big Head"].content
+local bhEnabled = false
+local bhTeamCheck = false
+
+addToggle("Big Head (Hitbox Expand)", function(state)
+    bhEnabled = state
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Character then
+            for _, part in pairs(plr.Character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name == "Head" then
+                    if state and (not bhTeamCheck or not isSameTeam(lp, plr)) then
+                        part.Size = part.Size * 2
+                        part.Transparency = 0.3
+                    else
+                        part.Size = part.Size / 2
+                        part.Transparency = 0
+                    end
+                end
+            end
+        end
+    end
+    showNotification("BIG HEAD", state and "Hitboxes expanded." or "Reset.", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, bhTab, 10)
+
+addToggle("Big Head - Team Check (Only Enemies)", function(state)
+    bhTeamCheck = state
+    -- Reapply state
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Character then
+            for _, part in pairs(plr.Character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name == "Head" then
+                    if bhEnabled and (not state or not isSameTeam(lp, plr)) then
+                        part.Size = part.Size * 2
+                        part.Transparency = 0.3
+                    else
+                        part.Size = part.Size / 2
+                        part.Transparency = 0
+                    end
+                end
+            end
+        end
+    end
+    showNotification("BIG HEAD TEAM CHECK", state and "ON - Only enemies." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, bhTab, 60)
+
+-- MODIFIED TRACERS WITH TEAM CHECK
+local tracerTab = tabRefs["Tracers"].content
+local tracerEnabled = false
+local tracerTeamCheck = false
+
+addToggle("Tracers (Command Tracking)", function(state)
+    tracerEnabled = state
+    showNotification("TRACERS", state and "ON - Tracking commands." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 0))
+end, tracerTab, 10)
+
+addToggle("Tracers - Team Check (Only Enemies)", function(state)
+    tracerTeamCheck = state
+    showNotification("TRACERS TEAM CHECK", state and "ON - Only enemies." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, tracerTab, 60)
+
+-- MODIFIED TRACER LOOP
+RunService.RenderStepped:Connect(function()
+    if not tracerEnabled or not hrp then return end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            if tracerTeamCheck and isSameTeam(lp, plr) then
+                continue
+            end
+            local root = plr.Character.HumanoidRootPart
+            local startPos = root.Position
+            local endPos = hrp.Position
+            local line = Instance.new("Part")
+            line.Size = Vector3.new(0.1, 0.1, (startPos - endPos).Magnitude)
+            line.CFrame = CFrame.lookAt(startPos, endPos) * CFrame.new(0, 0, -(startPos - endPos).Magnitude/2)
+            local teamColor = getTeamColor(plr)
+            line.BrickColor = isSameTeam(lp, plr) and BrickColor.Green() or BrickColor.Red()
+            line.Anchored = true
+            line.CanCollide = false
+            line.Material = Enum.Material.Neon
+            game:GetService("Debris"):AddItem(line, 0.5)
+        end
+    end
+end)
+
+-- MODIFIED KILL ALL WITH TEAM CHECK
+local killTab = tabRefs["Kill All"].content
+local killTeamCheck = false
+
+addButton("Kill All Players", function()
+    local count = 0
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= lp and plr.Character then
+            if killTeamCheck and isSameTeam(lp, plr) then
+                continue
+            end
+            local hum = plr.Character:FindFirstChild("Humanoid")
+            if hum then hum.Health = 0 count = count + 1 end
+        end
+    end
+    showNotification("KILL ALL", "Killed " .. count .. " players" .. (killTeamCheck and " (enemies only)" or ""), 2, Color3.fromRGB(255, 0, 0))
+end, killTab, 10)
+
+addToggle("Kill All - Team Check (Only Enemies)", function(state)
+    killTeamCheck = state
+    showNotification("KILL ALL TEAM CHECK", state and "ON - Only enemies." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, killTab, 60)
+
+-- MODIFIED TP ALL WITH TEAM CHECK
+local tpTab = tabRefs["TP All"].content
+local tpTeamCheck = false
+
+addButton("TP All Players to Me", function()
+    local count = 0
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            if tpTeamCheck and isSameTeam(lp, plr) then
+                continue
+            end
+            plr.Character.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0, 2, 2)
+            count = count + 1
+        end
+    end
+    showNotification("TP ALL", "Teleported " .. count .. " players" .. (tpTeamCheck and " (enemies only)" or ""), 2, Color3.fromRGB(0, 255, 0))
+end, tpTab, 10)
+
+addToggle("TP All - Team Check (Only Enemies)", function(state)
+    tpTeamCheck = state
+    showNotification("TP ALL TEAM CHECK", state and "ON - Only enemies." or "OFF", 2, state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 200, 0))
+end, tpTab, 60)
+
+-- MODIFIED SYUDAD - Already handles AC detection with notifications
+-- No team check needed for AC destroyer
+
+print("DEMON SUITE v5.4 LOADED - Team Check Active")
+
 print("DEMON SUITE v5.3 LOADED - Complete")
