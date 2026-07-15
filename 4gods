@@ -1,0 +1,464 @@
+-- ROBLOX EXPLOIT - GLOBAL SIDEBAR GUI WITH ASSET 131752759844949 FOR SKYBOX AND ALL DECALS
+-- EVERY DECAL, SKYBOX, AND PARTICLE TEXTURE USES THE SAME CUSTOM ASSET
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+
+local CUSTOM_ASSET = "rbxassetid://131752759844949"
+
+-- ===== FIND OR CREATE A REMOTE EVENT FOR GLOBAL BROADCAST =====
+local remoteEvent
+for _, obj in pairs(ReplicatedStorage:GetDescendants()) do
+    if obj:IsA("RemoteEvent") and obj.Name ~= "" then
+        remoteEvent = obj
+        break
+    end
+end
+if not remoteEvent then
+    remoteEvent = Instance.new("RemoteEvent")
+    remoteEvent.Name = "Global4GODS"
+    remoteEvent.Parent = ReplicatedStorage
+end
+
+-- ===== LOCAL SIDEBAR GUI =====
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "4GODS_PANEL"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = LocalPlayer.PlayerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 280, 0, 760)
+mainFrame.Position = UDim2.new(1, -290, 0.5, -380)
+mainFrame.BackgroundColor3 = Color3.new(0.05, 0.05, 0.1)
+mainFrame.BorderSizePixel = 3
+mainFrame.BorderColor3 = Color3.new(1, 0, 0)
+mainFrame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundColor3 = Color3.new(0.5, 0, 0)
+title.Text = "4GODS TERMINAL"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Parent = mainFrame
+
+-- Button: Global Skybox (CUSTOM ASSET)
+local btnSky = Instance.new("TextButton")
+btnSky.Size = UDim2.new(0.9, 0, 0, 40)
+btnSky.Position = UDim2.new(0.05, 0, 0.07, 5)
+btnSky.BackgroundColor3 = Color3.new(0.2, 0.6, 0.8)
+btnSky.Text = "SKYBOX (ALL)"
+btnSky.TextColor3 = Color3.new(1, 1, 1)
+btnSky.Parent = mainFrame
+btnSky.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("SKY")
+end)
+
+-- Button: Global Loud Laughing Sound (10x volume)
+local btnLaugh = Instance.new("TextButton")
+btnLaugh.Size = UDim2.new(0.9, 0, 0, 35)
+btnLaugh.Position = UDim2.new(0.05, 0, 0.14, 5)
+btnLaugh.BackgroundColor3 = Color3.new(0.9, 0.3, 0.9)
+btnLaugh.Text = "LOUD LAUGH (ALL) 10x"
+btnLaugh.TextColor3 = Color3.new(1, 1, 1)
+btnLaugh.TextScaled = true
+btnLaugh.Parent = mainFrame
+btnLaugh.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("LAUGH")
+end)
+
+-- Button: Global Horn Sound
+local btnSound = Instance.new("TextButton")
+btnSound.Size = UDim2.new(0.9, 0, 0, 35)
+btnSound.Position = UDim2.new(0.05, 0, 0.21, 5)
+btnSound.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
+btnSound.Text = "HORN (ALL)"
+btnSound.TextColor3 = Color3.new(1, 1, 1)
+btnSound.Parent = mainFrame
+btnSound.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("HORN")
+end)
+
+-- Button: Global Announcement
+local btnAnnounce = Instance.new("TextButton")
+btnAnnounce.Size = UDim2.new(0.9, 0, 0, 35)
+btnAnnounce.Position = UDim2.new(0.05, 0, 0.28, 5)
+btnAnnounce.BackgroundColor3 = Color3.new(0.8, 0.6, 0.1)
+btnAnnounce.Text = "ANNOUNCE (ALL)"
+btnAnnounce.TextColor3 = Color3.new(1, 1, 1)
+btnAnnounce.Parent = mainFrame
+btnAnnounce.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("ANNOUNCE")
+end)
+
+-- Button: Global Virus Popup (CUSTOM ASSET)
+local btnVirus = Instance.new("TextButton")
+btnVirus.Size = UDim2.new(0.9, 0, 0, 35)
+btnVirus.Position = UDim2.new(0.05, 0, 0.35, 5)
+btnVirus.BackgroundColor3 = Color3.new(0.9, 0.1, 0.9)
+btnVirus.Text = "VIRUS POPUP (ALL)"
+btnVirus.TextColor3 = Color3.new(1, 1, 1)
+btnVirus.Parent = mainFrame
+btnVirus.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("VIRUS")
+end)
+
+-- Button: DECAL ON ALL PARTS (CUSTOM ASSET)
+local btnDecal = Instance.new("TextButton")
+btnDecal.Size = UDim2.new(0.9, 0, 0, 35)
+btnDecal.Position = UDim2.new(0.05, 0, 0.42, 5)
+btnDecal.BackgroundColor3 = Color3.new(0.1, 0.8, 0.1)
+btnDecal.Text = "DECAL ALL PARTS"
+btnDecal.TextColor3 = Color3.new(1, 1, 1)
+btnDecal.TextScaled = true
+btnDecal.Parent = mainFrame
+btnDecal.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("DECAL")
+end)
+
+-- Button: PARTICLE SPAM (CUSTOM ASSET TEXTURE)
+local btnParticle = Instance.new("TextButton")
+btnParticle.Size = UDim2.new(0.9, 0, 0, 35)
+btnParticle.Position = UDim2.new(0.05, 0, 0.49, 5)
+btnParticle.BackgroundColor3 = Color3.new(0.1, 0.3, 0.9)
+btnParticle.Text = "PARTICLE SPAM (ALL)"
+btnParticle.TextColor3 = Color3.new(1, 1, 1)
+btnParticle.TextScaled = true
+btnParticle.Parent = mainFrame
+btnParticle.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("PARTICLE")
+end)
+
+-- Button: BOILED ONE MIMIC
+local btnBoiled = Instance.new("TextButton")
+btnBoiled.Size = UDim2.new(0.9, 0, 0, 45)
+btnBoiled.Position = UDim2.new(0.05, 0, 0.56, 5)
+btnBoiled.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+btnBoiled.Text = "🥵 BOILED ONE MIMIC (ALL)"
+btnBoiled.TextColor3 = Color3.new(1, 0.5, 0)
+btnBoiled.TextScaled = true
+btnBoiled.Parent = mainFrame
+btnBoiled.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("BOILED")
+    remoteEvent:FireServer("BOILED")
+end)
+
+-- Button: KILL ALL + 4GODS WIPE
+local btnKill = Instance.new("TextButton")
+btnKill.Size = UDim2.new(0.9, 0, 0, 50)
+btnKill.Position = UDim2.new(0.05, 0, 0.64, 5)
+btnKill.BackgroundColor3 = Color3.new(1, 0, 0)
+btnKill.Text = "💀 KILL ALL - 4GODS WIPE 💀"
+btnKill.TextColor3 = Color3.new(1, 1, 0)
+btnKill.TextScaled = true
+btnKill.Parent = mainFrame
+btnKill.MouseButton1Click:Connect(function()
+    remoteEvent:FireAllClients("KILL")
+    remoteEvent:FireServer("KILL")
+end)
+
+-- ===== CUSTOM SKYBOX FUNCTION =====
+local function setCustomSkybox()
+    for _, child in pairs(Lighting:GetChildren()) do
+        if child:IsA("Sky") then
+            child:Destroy()
+        end
+    end
+    local sky = Instance.new("Sky")
+    sky.SkyboxBk = CUSTOM_ASSET
+    sky.SkyboxDn = CUSTOM_ASSET
+    sky.SkyboxFt = CUSTOM_ASSET
+    sky.SkyboxLf = CUSTOM_ASSET
+    sky.SkyboxRt = CUSTOM_ASSET
+    sky.SkyboxUp = CUSTOM_ASSET
+    sky.Parent = Lighting
+    Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+    Lighting.Brightness = 1.5
+    Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+    Lighting.GlobalShadows = true
+    Lighting.FogEnd = 1000
+    Lighting.FogStart = 100
+    Lighting.FogColor = Color3.new(0.2, 0.2, 0.3)
+end
+
+-- ===== BOILED ONE MIMIC =====
+local function spawnBoiledMimic()
+    local character = LocalPlayer.Character
+    if not character then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    local mimic = character:Clone()
+    mimic.Name = "BoiledMimic_4GODS"
+    mimic.Parent = Workspace
+    local hum = mimic:FindFirstChild("Humanoid")
+    if hum then
+        hum.PlatformStand = true
+        hum.AutoRotate = false
+    end
+    mimic:SetPrimaryPartCFrame(rootPart.CFrame * CFrame.new(5, 0, 5))
+    for _, part in pairs(mimic:GetDescendants()) do
+        if part:IsA("BasePart") then
+            local steam = Instance.new("ParticleEmitter")
+            steam.Texture = CUSTOM_ASSET
+            steam.Rate = 200
+            steam.Lifetime = NumberRange.new(1, 3)
+            steam.SpreadAngle = Vector2.new(180, 180)
+            steam.Speed = NumberRange.new(2, 8)
+            steam.Color = ColorSequence.new(Color3.new(1, 0.5, 0), Color3.new(1, 1, 1))
+            steam.Size = NumberSequence.new(0.5, 2)
+            steam.Transparency = NumberSequence.new(0.3, 1)
+            steam.Parent = part
+            game:GetService("Debris"):AddItem(steam, 10)
+        end
+    end
+    local glow = Instance.new("PointLight")
+    glow.Color = Color3.new(1, 0.5, 0)
+    glow.Brightness = 5
+    glow.Range = 20
+    glow.Parent = rootPart
+    spawn(function()
+        while mimic and mimic.Parent do
+            local newPos = character:FindFirstChild("HumanoidRootPart")
+            if newPos then
+                local target = newPos.CFrame * CFrame.new(5, 0, 5)
+                local tween = TweenService:Create(mimic:GetPrimaryPartCFrame() or rootPart, TweenInfo.new(0.5, Enum.EasingStyle.Linear), {CFrame = target})
+                tween:Play()
+            end
+            wait(0.5)
+        end
+    end)
+    game:GetService("Debris"):AddItem(mimic, 60)
+    for i = 1, 5 do
+        local extra = character:Clone()
+        extra.Name = "BoiledMimic_Extra"
+        extra.Parent = Workspace
+        local hum2 = extra:FindFirstChild("Humanoid")
+        if hum2 then
+            hum2.PlatformStand = true
+            hum2.AutoRotate = false
+        end
+        local randomPos = Workspace:FindFirstChild("SpawnLocation") or rootPart
+        local offset = Vector3.new(math.random(-30, 30), 0, math.random(-30, 30))
+        extra:SetPrimaryPartCFrame((randomPos.CFrame or rootPart.CFrame) + offset)
+        game:GetService("Debris"):AddItem(extra, 60)
+    end
+end
+
+-- ===== RECEIVE GLOBAL COMMANDS =====
+remoteEvent.OnClientEvent:Connect(function(command)
+    if command == "SKY" then
+        setCustomSkybox()
+    elseif command == "LAUGH" then
+        local laughIds = {
+            "rbxassetid://181787087",
+            "rbxassetid://2709504685",
+            "rbxassetid://169540509",
+            "rbxassetid://306775917"
+        }
+        for i = 1, 10 do
+            for _, id in pairs(laughIds) do
+                local s = Instance.new("Sound")
+                s.SoundId = id
+                s.Volume = 10
+                s.PlayOnRemove = true
+                s.Parent = Workspace
+                s:Play()
+                game:GetService("Debris"):AddItem(s, 5)
+                wait(0.05)
+            end
+        end
+        for i = 1, 20 do
+            local s = Instance.new("Sound")
+            s.SoundId = "rbxassetid://2709504685"
+            s.Volume = 10
+            s.PlayOnRemove = true
+            s.Parent = Workspace
+            s:Play()
+            game:GetService("Debris"):AddItem(s, 4)
+            wait(0.1)
+        end
+    elseif command == "HORN" then
+        for i = 1, 20 do
+            local s = Instance.new("Sound")
+            s.SoundId = "rbxassetid://181787087"
+            s.Volume = 10
+            s.PlayOnRemove = true
+            s.Parent = Workspace
+            s:Play()
+            game:GetService("Debris"):AddItem(s, 2)
+            wait(0.3)
+        end
+    elseif command == "ANNOUNCE" then
+        local chat = game:GetService("Chat")
+        if chat and chat:FindFirstChild("ClientChatMessage") then
+            local msg = Instance.new("ClientChatMessage")
+            msg.Text = "4GODS IS HERE"
+            msg.Parent = chat
+        end
+    elseif command == "VIRUS" then
+        for i = 1, 40 do
+            local popup = Instance.new("Frame")
+            popup.Size = UDim2.new(0, 200, 0, 150)
+            popup.Position = UDim2.new(math.random() * 0.7, 0, math.random() * 0.7, 0)
+            popup.BackgroundColor3 = Color3.new(0, 0, 0)
+            popup.BorderSizePixel = 4
+            popup.BorderColor3 = Color3.new(1, 0, 0)
+            popup.Parent = LocalPlayer.PlayerGui
+            local imgLabel = Instance.new("ImageLabel")
+            imgLabel.Size = UDim2.new(1, 0, 0.7, 0)
+            imgLabel.Position = UDim2.new(0, 0, 0, 0)
+            imgLabel.BackgroundTransparency = 1
+            imgLabel.Image = CUSTOM_ASSET
+            imgLabel.ScaleType = Enum.ScaleType.Fit
+            imgLabel.Parent = popup
+            local txtLabel = Instance.new("TextLabel")
+            txtLabel.Size = UDim2.new(1, 0, 0.3, 0)
+            txtLabel.Position = UDim2.new(0, 0, 0.7, 0)
+            txtLabel.BackgroundTransparency = 1
+            txtLabel.Text = "⚠ 4GODS VIRUS ⚠"
+            txtLabel.TextColor3 = Color3.new(1, 0, 0)
+            txtLabel.TextScaled = true
+            txtLabel.TextWrapped = true
+            txtLabel.Parent = popup
+            spawn(function()
+                local xDir = math.random(-4, 4)
+                local yDir = math.random(-4, 4)
+                if xDir == 0 then xDir = 1 end
+                if yDir == 0 then yDir = 1 end
+                while popup do
+                    popup.Position = UDim2.new(
+                        popup.Position.X.Scale + xDir * 0.003,
+                        0,
+                        popup.Position.Y.Scale + yDir * 0.003,
+                        0
+                    )
+                    if popup.Position.X.Scale < 0 or popup.Position.X.Scale > 0.8 then xDir = -xDir end
+                    if popup.Position.Y.Scale < 0 or popup.Position.Y.Scale > 0.8 then yDir = -yDir end
+                    wait(0.05)
+                end
+            end)
+            game:GetService("Debris"):AddItem(popup, 25)
+        end
+    elseif command == "DECAL" then
+        for _, part in pairs(Workspace:GetDescendants()) do
+            if part:IsA("BasePart") then
+                local decal = Instance.new("Decal")
+                decal.Texture = CUSTOM_ASSET
+                decal.Face = Enum.NormalId.Front
+                decal.Parent = part
+                local decal2 = decal:Clone()
+                decal2.Face = Enum.NormalId.Back
+                decal2.Parent = part
+                local decal3 = decal:Clone()
+                decal3.Face = Enum.NormalId.Top
+                decal3.Parent = part
+                local decal4 = decal:Clone()
+                decal4.Face = Enum.NormalId.Bottom
+                decal4.Parent = part
+                local decal5 = decal:Clone()
+                decal5.Face = Enum.NormalId.Left
+                decal5.Parent = part
+                local decal6 = decal:Clone()
+                decal6.Face = Enum.NormalId.Right
+                decal6.Parent = part
+                game:GetService("Debris"):AddItem(decal, 60)
+                game:GetService("Debris"):AddItem(decal2, 60)
+                game:GetService("Debris"):AddItem(decal3, 60)
+                game:GetService("Debris"):AddItem(decal4, 60)
+                game:GetService("Debris"):AddItem(decal5, 60)
+                game:GetService("Debris"):AddItem(decal6, 60)
+            end
+        end
+    elseif command == "PARTICLE" then
+        for _, part in pairs(Workspace:GetDescendants()) do
+            if part:IsA("BasePart") then
+                local particle = Instance.new("ParticleEmitter")
+                particle.Texture = CUSTOM_ASSET
+                particle.Rate = 2000
+                particle.Lifetime = NumberRange.new(2, 5)
+                particle.SpreadAngle = Vector2.new(360, 360)
+                particle.VelocityInheritance = 0
+                particle.Speed = NumberRange.new(5, 20)
+                particle.Color = ColorSequence.new(Color3.new(1, 0, 0), Color3.new(1, 0.5, 0), Color3.new(1, 1, 0))
+                particle.Size = NumberSequence.new(0.5, 3)
+                particle.Transparency = NumberSequence.new(0, 0.8)
+                particle.Rotation = NumberRange.new(0, 360)
+                particle.Parent = part
+                game:GetService("Debris"):AddItem(particle, 15)
+                local particle2 = particle:Clone()
+                particle2.Rate = 1500
+                particle2.Speed = NumberRange.new(1, 10)
+                particle2.Size = NumberSequence.new(1, 4)
+                particle2.Transparency = NumberSequence.new(0.2, 1)
+                particle2.Parent = part
+                game:GetService("Debris"):AddItem(particle2, 15)
+            end
+        end
+    elseif command == "BOILED" then
+        spawnBoiledMimic()
+    elseif command == "KILL" then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character then
+                player.Character:BreakJoints()
+                local explosion = Instance.new("Explosion")
+                explosion.Position = player.Character.HumanoidRootPart.Position
+                explosion.BlastRadius = 5
+                explosion.BlastPressure = 0
+                explosion.Parent = Workspace
+                game:GetService("Debris"):AddItem(explosion, 1)
+            end
+        end
+        local wipeGui = Instance.new("ScreenGui")
+        wipeGui.Name = "WipeMessage"
+        wipeGui.ResetOnSpawn = false
+        wipeGui.Parent = LocalPlayer.PlayerGui
+        local wipeFrame = Instance.new("Frame")
+        wipeFrame.Size = UDim2.new(1, 0, 1, 0)
+        wipeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+        wipeFrame.BackgroundTransparency = 0.4
+        wipeFrame.Parent = wipeGui
+        local wipeText = Instance.new("TextLabel")
+        wipeText.Size = UDim2.new(1, 0, 1, 0)
+        wipeText.BackgroundTransparency = 1
+        wipeText.Text = "🔥 4GODS JUST WIPEDDD 🔥"
+        wipeText.TextColor3 = Color3.new(1, 0, 0)
+        wipeText.TextScaled = true
+        wipeText.TextSize = 80
+        wipeText.Font = Enum.Font.Bold
+        wipeText.TextStrokeColor3 = Color3.new(1, 1, 0)
+        wipeText.TextStrokeTransparency = 0.3
+        wipeText.Parent = wipeFrame
+        for i = 1, 5 do
+            wipeText.TextColor3 = i % 2 == 0 and Color3.new(1, 0, 0) or Color3.new(1, 1, 0)
+            wait(0.2)
+        end
+        game:GetService("Debris"):AddItem(wipeGui, 5)
+        local chat = game:GetService("Chat")
+        if chat and chat:FindFirstChild("ClientChatMessage") then
+            local msg = Instance.new("ClientChatMessage")
+            msg.Text = "💀 4GODS JUST WIPEDDD EVERYONE 💀"
+            msg.Parent = chat
+        end
+    end
+end)
+
+remoteEvent.OnServerEvent:Connect(function(player, command)
+    if command == "KILL" then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Character then
+                plr.Character:BreakJoints()
+            end
+        end
+        remoteEvent:FireAllClients("KILL")
+    elseif command == "BOILED" then
+        remoteEvent:FireAllClients("BOILED")
+    end
+end)
+
+print("4GODS TERMINAL LOADED - ALL ASSETS USE ID 131752759844949")
